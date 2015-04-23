@@ -1,0 +1,19 @@
+{
+	"name": "appsol/WP_Video_Playlists",
+    "description": "Wordpress plugin to display videos from YouTube and others playlists or channels",
+    "license": "GPL2",
+    "keywords": ["wordpress"],
+    "authors": [
+        {
+            "name": "Stuart Laverick",
+            "email": "stuart@appropriatesolutions.co.uk"
+        }
+    ],
+    "repositories": 
+	[],
+
+	"require": {
+		"php": ">=5.3.0",
+		"google/apiclient": "1.0.*@beta"
+	}
+}
