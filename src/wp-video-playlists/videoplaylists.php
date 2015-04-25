@@ -34,7 +34,7 @@ require_once 'vendor/autoload.php';
 require_once 'videoplaylist_widget.php';
 require_once 'videoplaylists_options.php';
 
-class VideoPlaylists extends \WP_Widget
+class VideoPlaylists
 {
 
     /**
@@ -361,12 +361,20 @@ class VideoPlaylists extends \WP_Widget
     private function getYouTubeClient()
     {
         $options = get_option( 'videoplaylists' );
-        if (!isset($options['youtube_simple_key'])) {
-            throw new Exception("Google API Client Key missing", 1);
+        
+        try {
+            if (!isset($options['youtube_simple_key'])) {
+                throw new \Exception("Google API Client Key missing", 1);
+            }
+            $client = new \Google_Client();
+            $client->setDeveloperKey($options['youtube_simple_key']);
+            $youtube = new \Google_Service_YouTube($client);
         }
-        $client = new \Google_Client();
-        $client->setDeveloperKey($options['youtube_simple_key']);
-        $youtube = new \Google_Service_YouTube($client);
+        catch(\Exception $e) {
+            $this->lastError = $e->getMessage();
+            error_log($this->lastError);
+            return false;
+        }
         return $youtube;
     }
 
@@ -385,7 +393,8 @@ class VideoPlaylists extends \WP_Widget
                 $channelList = $yt->channels->listChannels('id',['forUsername' => $youtubeUser]);
             }
             catch (\Exception $e) {
-                $this->lastError = $e->message;
+                $this->lastError = $e->getMessage();
+                error_log($this->lastError);
                 return false;
             }
 
@@ -412,7 +421,8 @@ class VideoPlaylists extends \WP_Widget
                 $playList = $yt->playlists->listPlaylists('id,snippet', $params);
             }
             catch (\Exception $e) {
-                $this->lastError = $e->message;
+                $this->lastError = $e->getMessage();
+                error_log($this->lastError);
                 return false;
             }
             $this->setTransient('listPlaylists-channelId-' . $channelId, $playList);
@@ -439,7 +449,8 @@ class VideoPlaylists extends \WP_Widget
                 $channelItems = $yt->search->listSearch('id,snippet', $params);
             }
             catch (\Exception $e) {
-                $this->lastError = $e->message;
+                $this->lastError = $e->getMessage();
+                error_log($this->lastError);
                 return false;
             }
             $this->setTransient('listSearch-channelId-' . $channelId . '-max-' . $maxResults, $channelItems);
@@ -474,7 +485,8 @@ class VideoPlaylists extends \WP_Widget
                 $playlistItems = $yt->playlistItems->listPlaylistItems('id,snippet', $params);
             }
             catch (\Exception $e) {
-                $this->lastError = $e->message;
+                $this->lastError = $e->getMessage();
+                error_log($this->lastError);
                 return false;
             }
             $this->setTransient('listPlaylistItems-playlistId-' . $playlistId . '-max-' . $maxResults, $playlistItems);
